@@ -1,0 +1,32 @@
+locals {
+  schemas    = [
+                 "PRIVATE",
+                 "PUBLIC",
+                 "MY_SCHEMA",
+               ]
+  privileges = [
+                 ["CREATE TABLE", "TEST!"],
+                 ["CREATE VIEW","YTR"],
+                 ["USAGE","REWS"],
+               ]
+
+  # Nested loop over both lists, and flatten the result.
+  schema_privileges = distinct(flatten([
+    for tg in "${aws_lb_target_group.tg.*.arn}" : [
+      for privilege in local.privileges : [
+         for priv in privilege : {
+         
+        target_group = tg 
+        ips = priv
+      }
+     ]
+    ]
+  ]))
+}
+
+
+
+
+output "map" {
+value = local.schema_privileges
+}

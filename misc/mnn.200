@@ -1,0 +1,18 @@
+locals {
+  privileges = [
+                 {tg1 = ["CREATE TABLE", "TEST!"]},
+                 {tg2 = ["CREATE VIEW","YTR"]},
+               ]
+
+  # Nested loop over both lists, and flatten the result.
+  schema_privileges = flatten([
+    for tg,ips  in local.privileges : { 
+        target_group = tg
+        ips = ips 
+     }
+  ])
+}
+output "map" {
+value = local.schema_privileges
+}
+

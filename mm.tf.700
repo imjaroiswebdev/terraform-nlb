@@ -1,0 +1,38 @@
+variable "target_groups" {
+  type    = list(string)
+  default = ["tg1", "tg2", "tgt3"]
+}
+
+variable "instace_ips" {
+  type    = list(list(string))
+  default = [["172.31.11.179","172.31.32.49"], ["172.31.11.179"]] 
+}
+
+locals {
+  ip_map = flatten([
+    # Using Elements filtering (Ref. https://www.terraform.io/language/expressions/for#filtering-elements)
+    for tgIndex, tg in var.target_groups : [
+      for ipsIndex, ips in var.instace_ips : {
+        for ip in ips :
+        "${tg}.${ip}" => {
+          target_group_arn = tg
+          target_id        = ip
+        }
+      } if tgIndex == ipsIndex
+    ]
+  ])
+}
+
+output "ip_map" {
+  value = merge(local.ip_map...)
+}
+
+/*
+# aws_lb_target_group_attachment creation
+resource "aws_lb_target_group_attachment" "clustera" {
+  for_each = local.ip_map
+
+  target_group_arn = each.value.target_group_arn
+  target_id        = each.value.target_id
+}
+*/

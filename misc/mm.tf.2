@@ -1,0 +1,69 @@
+
+variable "target_groups"{
+type = list(string)
+default = ["target1","target2","target3"]
+}
+
+variable "instace_ids" {
+type = string
+default = ["id1","id2","id3","id4"]
+}
+
+locals {
+  clusteratgs_map = flatten([
+    for tg, id in var.instace_ids  : [
+      for tg in var.target_groups  : [
+        format("%s = %s", tg, id)
+               ]
+           ]
+      ])
+}
+
+
+
+
+locals {
+  clusteratgs_map1 = flatten([
+    for id in var.instace_ids  : [
+      for tg in "${aws_lb_target_group.tg.*.arn}"  : [
+        format("%s = %s", tg, id)
+               ]
+           ]
+      ])
+}
+
+/*
+
+locals {
+  clusteratgs_map2 = flatten([
+    for tg in "${aws_lb_target_group.tg.*.arn}"  : [
+      for ids in var.instace_ids  : [
+         for id in ids  : [
+        #format("%s = %s", tg, id)
+         tg = id ,
+               ]
+           ]
+          ]
+      ])
+}
+
+*/
+
+
+locals {
+  clusteratgs_map3 = "${aws_lb_target_group.tg.*.arn}"
+}
+
+output "tg_tid" {
+value = local.clusteratgs_map
+}
+
+output "tg_tid1" {
+value = local.clusteratgs_map1
+}
+
+
+output "target_group_id" {
+    value = "${aws_lb_target_group.tg.*.id}"
+    description = "The id of the Target Group"
+}

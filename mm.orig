@@ -1,0 +1,24 @@
+variable "target_groups" {
+  type = list(string)
+  default = ["target1","target2","target3"]
+}
+variable "instace_ids"{
+  type = list(string)
+  default = ["id1","id2"]
+}
+
+locals {
+  clusteratgs_map = flatten([
+    for tg, id in var.instace_ids  : [
+      for tg in var.target_groups  : { 
+        format("%s = %s", tg, id)
+               }
+           ]
+      ])
+}
+
+resource "aws_lb_target_group_attachment" "clustera" {
+ for_each = local.clusteratgs_map 
+  target_group_arn      = each.key
+  target_id             = each.value
+}
